@@ -10,9 +10,14 @@ suite "asyncstreams":
       s.bindAddr(PORT)
       s.listen
 
-      let c = await s.accept
-      let req = await c.recvLine
-      await c.send("Hello, " & req & "\c\L")
+      let c = newAsyncSocketStream(await s.accept)
+
+      let ch = await c.readChar
+      await c.writeChar(ch)
+
+      let line = await c.readLine
+      await c.writeLine("Hello, " & line)
+
       c.close
       s.close
 
@@ -27,7 +32,12 @@ suite "asyncstreams":
       let s = newAsyncSocket()
       await s.connect("localhost", PORT)
       let c = newAsyncSocketStream(s)
+
+      await c.writeChar('A')
+      let ch = await c.readChar
+      check: ch == 'A'
+
       await c.writeLine("World!")
-      let rsp = await c.readLine
-      check: rsp == "Hello, World!"
+      let line = await c.readLine
+      check: line == "Hello, World!"
     waitFor doTest()

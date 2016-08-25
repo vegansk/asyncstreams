@@ -14,16 +14,28 @@ type
 ####################################################################################################
 # AsyncStream
 
+proc close*(s: AsyncStream) =
+  s.closeImpl(s)
+
+proc readData*(s: AsyncStream, size: int): Future[string] {.async.} =
+  result = await s.readDataImpl(s, size)
+
+proc writeData*(s: AsyncStream, data: string) {.async.} =
+  await s.writeDataImpl(s, data)
+
 proc readChar*(s: AsyncStream): Future[char] {.async.} =
-  let data = await s.readDataImpl(s, 1)
+  let data = await s.readData(1)
   result = if data.len == 0: '\0' else: data[0]
+
+proc writeChar*(s: AsyncStream, c: char) {.async.} =
+  await s.writeData($c)
 
 proc readLine*(s: AsyncStream): Future[string] {.async.} =
   result = ""
   while true:
     let c = await s.readChar
     if c == '\c':
-      asyncCheck s.readChar
+      await s.readChar
       break
     elif c == '\L' or c == '\0':
       break
@@ -31,7 +43,7 @@ proc readLine*(s: AsyncStream): Future[string] {.async.} =
       result.add(c)
 
 proc writeLine*(s: AsyncStream, data: string) {.async.} =
-  asyncCheck s.writeDataImpl(s, data & "\c\L")
+  await s.writeData(data & "\c\L")
 
 ####################################################################################################
 # ``Not implemented`` stuff
