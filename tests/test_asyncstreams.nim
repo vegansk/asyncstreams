@@ -65,15 +65,35 @@ suite "asyncstreams":
       check: s.atEnd
     waitFor doTest()
 
-  test "Read operations":
+  test "Operations":
     proc doTest {.async.} =
-      let s = newAsyncStringStream("Hello, world!\c\L")
+      let s = newAsyncStringStream()
+
+      await s.writeChar('H')
+      s.setPosition(0)
       let ch = await s.readChar
       check: ch == 'H'
+
+      s.setPosition(0)
+      await s.writeLine("Hello, world!")
       s.setPosition(0)
       let line = await s.readLine
       check: line == "Hello, world!"
+
       s.setPosition(0)
       let all = await s.readAll
       check: all == "Hello, world!\c\L"
+
+      s.setPosition(0)
+      await s.writeByte(42)
+      s.setPosition(0)
+      let b = await s.readByte
+      check: b == 42
+
+      s.setPosition(0)
+      await s.writeFloat(1.0)
+      s.setPosition(0)
+      let f = await s.readFloat
+      check: f == 1.0
+
     waitFor doTest()

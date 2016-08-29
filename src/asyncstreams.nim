@@ -59,6 +59,117 @@ proc readAll*(s: AsyncStream): Future[string] {.async.} =
   while not s.atEnd:
     result &= await s.readData(4096)
 
+# Immitate buffer API using strings
+proc readBuffer*(s: AsyncStream, buffer: pointer, size: int): Future[int] {.async.} =
+  let res = await s.readData(size)
+  if res.len > 0:
+    copyMem(buffer, res.cstring, res.len)
+  result = res.len
+
+# Immitate buffer API using strings
+proc writeBuffer*(s: AsyncStream, buffer: pointer, size: int) {.async.} =
+  var data = newString(size)
+  copyMem(addr data[0], buffer, size)
+  await s.writeData(data)
+
+proc readByte*(s: AsyncStream): Future[byte] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeByte*(s: AsyncStream, data: byte) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readInt8*(s: AsyncStream): Future[int8] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeInt8*(s: AsyncStream, data: int8) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readInt16*(s: AsyncStream): Future[int16] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeInt16*(s: AsyncStream, data: int16) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readInt32*(s: AsyncStream): Future[int32] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeInt32*(s: AsyncStream, data: int32) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readInt64*(s: AsyncStream): Future[int64] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeInt64*(s: AsyncStream, data: int64) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readUInt8*(s: AsyncStream): Future[uint8] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeUInt8*(s: AsyncStream, data: uint8) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readUInt16*(s: AsyncStream): Future[uint16] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeUInt16*(s: AsyncStream, data: uint16) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readUInt32*(s: AsyncStream): Future[uint32] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeUInt32*(s: AsyncStream, data: uint32) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readUInt64*(s: AsyncStream): Future[uint64] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeUInt64*(s: AsyncStream, data: uint64) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readInt*(s: AsyncStream): Future[int] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeInt*(s: AsyncStream, data: int) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readUInt*(s: AsyncStream): Future[uint] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeUInt*(s: AsyncStream, data: uint) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readFloat32*(s: AsyncStream): Future[float32] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeFloat32*(s: AsyncStream, data: float32) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readFloat64*(s: AsyncStream): Future[float64] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeFloat64*(s: AsyncStream, data: float64) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
+proc readFloat*(s: AsyncStream): Future[float] {.async.} =
+  doAssert((await s.readBuffer(addr result, sizeof result)) == sizeof result)
+
+proc writeFloat*(s: AsyncStream, data: float) {.async.} =
+  var d = data
+  await s.writeBuffer(addr d, sizeof d)
+
 ####################################################################################################
 # ``Not implemented`` stuff
 
