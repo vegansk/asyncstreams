@@ -1,4 +1,4 @@
-import asyncdispatch, asyncnet
+import asyncdispatch, asyncnet, asyncfile
 
 type
   AsyncStream* = ref AsyncStreamObj
@@ -45,6 +45,9 @@ proc readLine*(s: AsyncStream): Future[string] {.async.} =
 proc writeLine*(s: AsyncStream, data: string) {.async.} =
   await s.writeData(data & "\c\L")
 
+proc atEnd*(s: AsyncStream): bool =
+  s.atEndImpl(s)
+
 ####################################################################################################
 # ``Not implemented`` stuff
 
@@ -56,6 +59,62 @@ proc getPositionNotImplemented(s: AsyncStream): int64 =
 
 proc flushNotImplemented(s: AsyncStream) {.async.} =
   doAssert(false, "flush operation is not implemented")
+
+####################################################################################################
+# AsyncFileStream
+
+type
+  AsyncFileStream = ref AsyncFileStreamObj
+  AsyncFileStreamObj = object of AsyncStreamObj
+    f: AsyncFile
+    eof: bool
+    closed: bool
+
+proc fileClose(s: AsyncStream) =
+  let f = AsyncFileStream(s)
+  f.f.close
+  f.closed = true
+
+proc fileAtEnd(s: AsyncStream): bool =
+  let f = AsyncFileStream(s)
+  f.closed or f.eof
+
+proc fileSetPosition(s: AsyncStream, pos: int64) =
+  AsyncFileStream(s).f.setFilePos(pos)
+
+proc fileGetPosition(s: AsyncStream): int64 =
+  AsyncFileStream(s).f.getFilePos
+
+proc fileReadData(s: AsyncStream, size: int): Future[string] {.async.} =
+  let f = AsyncFileStream(s)
+  result = await  f.f.read(size)
+  if result == "":
+    f.eof = true
+
+proc fileWriteData(s: AsyncStream; data: string) {.async.} =
+  await AsyncFileStream(s).f.write(data)
+
+proc initAsyncFileStreamImpl(res: var AsyncFileStreamObj, f: AsyncFile) =
+  res.f = f
+  res.closed = false
+
+  res.closeImpl = fileClose
+  res.atEndImpl = fileAtEnd
+  res.setPositionImpl = fileSetPosition
+  res.getPositionImpl = fileGetPosition
+  res.readDataImpl = cast[type(res.readDataImpl)](fileReadData)
+  res.writeDataImpl = cast[type(res.writeDataImpl)](fileWriteData)
+  res.flushImpl = flushNotImplemented
+
+proc newAsyncFileStream*(fileName: string, mode = fmRead): AsyncStream =
+  var res = new AsyncFileStream
+  initAsyncFileStreamImpl(res[], openAsync(fileName, mode))
+  result = res
+
+proc newAsyncFileStream*(f: AsyncFile): AsyncStream =
+  var res = new AsyncFileStream
+  initAsyncFileStreamImpl(res[], f)
+  result = res
 
 ####################################################################################################
 # AsyncSocketStream

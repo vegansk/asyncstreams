@@ -1,4 +1,4 @@
-import unittest, asyncdispatch, asyncstreams, asyncnet, threadpool
+import unittest, asyncdispatch, asyncstreams, asyncnet, threadpool, os
 
 const PORT = Port(9999)
 
@@ -41,3 +41,17 @@ suite "asyncstreams":
       let line = await c.readLine
       check: line == "Hello, World!"
     waitFor doTest()
+
+  test "AsyncFileStream":
+    proc doTest {.async.} =
+      let fname = getTempDir() / "asyncstreamstest.nim"
+      var s = newAsyncFileStream(fname, fmWrite)
+      await s.writeLine("Hello, world!")
+      s.close
+      s = newAsyncFileStream(fname, fmRead)
+      let line = await s.readLine
+      check: line == "Hello, world!"
+      check: not s.atEnd
+      discard await s.readLine
+      check: s.atEnd
+      fname.removeFile
