@@ -23,7 +23,7 @@ suite "asyncstreams":
 
       spawn run()
 
-    # runSocketServer()
+    runSocketServer()
 
     proc doTest {.async.} =
       let s = newAsyncSocket()
@@ -37,7 +37,7 @@ suite "asyncstreams":
       await c.writeLine("World!")
       let line = await c.readLine
       check: line == "Hello, World!"
-    # waitFor doTest()
+    waitFor doTest()
 
   test "AsyncFileStream":
     proc doTest {.async.} =
@@ -63,4 +63,17 @@ suite "asyncstreams":
       check: not s.atEnd
       discard await s.readLine
       check: s.atEnd
+    waitFor doTest()
+
+  test "Read operations":
+    proc doTest {.async.} =
+      let s = newAsyncStringStream("Hello, world!\c\L")
+      let ch = await s.readChar
+      check: ch == 'H'
+      s.setPosition(0)
+      let line = await s.readLine
+      check: line == "Hello, world!"
+      s.setPosition(0)
+      let all = await s.readAll
+      check: all == "Hello, world!\c\L"
     waitFor doTest()

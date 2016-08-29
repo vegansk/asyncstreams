@@ -17,6 +17,15 @@ type
 proc close*(s: AsyncStream) =
   s.closeImpl(s)
 
+proc atEnd*(s: AsyncStream): bool =
+  s.atEndImpl(s)
+
+proc getPosition*(s: AsyncStream): int64 =
+  s.getPositionImpl(s)
+
+proc setPosition*(s: AsyncStream, pos: int64) =
+  s.setPositionImpl(s, pos)
+
 proc readData*(s: AsyncStream, size: int): Future[string] {.async.} =
   result = await s.readDataImpl(s, size)
 
@@ -45,14 +54,10 @@ proc readLine*(s: AsyncStream): Future[string] {.async.} =
 proc writeLine*(s: AsyncStream, data: string) {.async.} =
   await s.writeData(data & "\c\L")
 
-proc atEnd*(s: AsyncStream): bool =
-  s.atEndImpl(s)
-
-proc getPosition*(s: AsyncStream): int64 =
-  s.getPositionImpl(s)
-
-proc setPosition*(s: AsyncStream, pos: int64) =
-  s.setPositionImpl(s, pos)
+proc readAll*(s: AsyncStream): Future[string] {.async.} =
+  result = ""
+  while not s.atEnd:
+    result &= await s.readData(4096)
 
 ####################################################################################################
 # ``Not implemented`` stuff
