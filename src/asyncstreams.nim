@@ -48,6 +48,12 @@ proc writeLine*(s: AsyncStream, data: string) {.async.} =
 proc atEnd*(s: AsyncStream): bool =
   s.atEndImpl(s)
 
+proc getPosition*(s: AsyncStream): int64 =
+  s.getPositionImpl(s)
+
+proc setPosition*(s: AsyncStream, pos: int64) =
+  s.setPositionImpl(s, pos)
+
 ####################################################################################################
 # ``Not implemented`` stuff
 
@@ -59,6 +65,9 @@ proc getPositionNotImplemented(s: AsyncStream): int64 =
 
 proc flushNotImplemented(s: AsyncStream) {.async.} =
   doAssert(false, "flush operation is not implemented")
+
+proc flushNop(s: AsyncStream) {.async.} =
+  discard
 
 ####################################################################################################
 # AsyncFileStream
@@ -104,7 +113,7 @@ proc initAsyncFileStreamImpl(res: var AsyncFileStreamObj, f: AsyncFile) =
   res.getPositionImpl = fileGetPosition
   res.readDataImpl = cast[type(res.readDataImpl)](fileReadData)
   res.writeDataImpl = cast[type(res.writeDataImpl)](fileWriteData)
-  res.flushImpl = flushNotImplemented
+  res.flushImpl = flushNop
 
 proc newAsyncFileStream*(fileName: string, mode = fmRead): AsyncStream =
   var res = new AsyncFileStream
@@ -115,6 +124,63 @@ proc newAsyncFileStream*(f: AsyncFile): AsyncStream =
   var res = new AsyncFileStream
   initAsyncFileStreamImpl(res[], f)
   result = res
+
+####################################################################################################
+# AsyncStringStream
+
+type
+  AsyncStringStream* = ref AsyncStringStreamObj
+  AsyncStringStreamObj = object of AsyncStreamObj
+    data: string
+    pos: int
+    eof: bool
+    closed: bool
+
+proc strClose(s: AsyncStream) =
+  let str = AsyncStringStream(s)
+  str.closed = true
+
+proc strAtEnd(s: AsyncStream): bool =
+  let str = AsyncStringStream(s)
+  str.closed or str.eof
+
+proc strSetPosition(s: AsyncStream, pos: int64) =
+  let str = AsyncStringStream(s)
+  str.pos = if pos.int > str.data.len: str.data.len else: pos.int
+
+proc strGetPosition(s: AsyncStream): int64 =
+  AsyncStringStream(s).pos
+
+proc strReadData(s: AsyncStream, size: int): Future[string] {.async.} =
+  let str = AsyncStringStream(s)
+  doAssert(not str.closed, "AsyncStringStream is closed")
+  result = str.data[str.pos..(str.pos+size-1)]
+  str.pos += result.len
+  if result.len == 0:
+    str.eof = true
+
+proc strWriteData(s: AsyncStream, data: string) {.async.} =
+  let str = AsyncStringStream(s)
+  doAssert(not str.closed, "AsyncStringStream is closed")
+  if str.pos + data.len > str.data.len:
+    str.data.setLen(str.pos + data.len)
+  str.data[str.pos..(str.pos+data.len-1)] = data
+  str.pos += data.len
+
+proc `$`*(s: AsyncStringStream): string =
+  s.data
+
+proc newAsyncStringStream*(data = ""): AsyncStringStream =
+  new result
+  result.data = data
+
+  result.closeImpl = strClose
+  result.atEndImpl = strAtEnd
+  result.setPositionImpl = strSetPosition
+  result.getPositionImpl = strGetPosition
+  result.readDataImpl = cast[type(result.readDataImpl)](strReadData)
+  result.writeDataImpl = cast[type(result.writeDataImpl)](strWriteData)
+  result.flushImpl = flushNop
 
 ####################################################################################################
 # AsyncSocketStream
@@ -150,7 +216,7 @@ proc initAsyncSocketStreamImpl(res: var AsyncSocketStreamObj, s: AsyncSocket) =
   res.getPositionImpl = getPositionNotImplemented
   res.readDataImpl = cast[type(res.readDataImpl)](sockReadData)
   res.writeDataImpl = cast[type(res.writeDataImpl)](sockWriteData)
-  res.flushImpl = flushNotImplemented
+  res.flushImpl = flushNop
 
 proc newAsyncSocketStream*(s: AsyncSocket): AsyncStream =
   var res = new AsyncSocketStream
