@@ -1,4 +1,4 @@
-import unittest, asyncdispatch, asyncstreams, asyncnet, threadpool, os
+import unittest, asyncdispatch, asyncstreams, asyncnet, threadpool, os, strutils
 
 const PORT = Port(9999)
 
@@ -82,7 +82,7 @@ suite "asyncstreams":
 
       s.setPosition(0)
       let all = await s.readAll
-      check: all == "Hello, world!\c\L"
+      check: all == "Hello, world!\n"
 
       s.setPosition(0)
       await s.writeByte(42)
@@ -96,4 +96,29 @@ suite "asyncstreams":
       let f = await s.readFloat
       check: f == 1.0
 
+      s.setPosition(0)
+      await s.writeBool(true)
+      s.setPosition(0)
+      let bo = await s.readBool
+      check: bo
+
+      s.setPosition(1000)
+      try:
+        discard await s.readBool
+      except IOError:
+        return
+      check: false
     waitFor doTest()
+
+  test "Example for the documentation":
+    proc main {.async.} =
+      var s = newAsyncStringStream("""Hello
+world!""")
+      var res = newSeq[string]()
+      while true:
+        let l = await s.readLine()
+        if l == "":
+          break
+        res.add(l)
+      doAssert(res.join(", ") == "Hello, world!")
+    waitFor main()
