@@ -46,7 +46,7 @@ type
     writeImpl*: proc (s: AsyncStream; buf: pointer, size: int): Future[void] {.gcsafe, tags: [WriteIOEffect].}
     flushImpl*: proc (s: AsyncStream): Future[void] {.gcsafe.}
 
-#[###################################################################################################
+#[
 # AsyncStream
 ]#
 
@@ -70,12 +70,10 @@ proc setPosition*(s: AsyncStream, pos: int64) =
   ## Sets the current position in the stream ``s``
   s.setPositionImpl(s, pos)
 
-  # Imitate buffer API using strings
 proc readBuffer*(s: AsyncStream, buffer: pointer, size: int): Future[int] {.async.} =
   ## Reads up to ``size`` bytes from the stream ``s`` into the ``buffer`` 
   result = await s.readImpl(s, buffer, size)
 
-# Imitate buffer API using strings
 proc writeBuffer*(s: AsyncStream, buffer: pointer, size: int) {.async.} =
   ## Writes ``size`` bytes from the ``buffer`` into the stream ``s``
   await s.writeImpl(s, buffer, size)
@@ -127,127 +125,169 @@ template checkEof(res: untyped): untyped =
     raise newException(IOError, "End of file exception")
 
 proc readByte*(s: AsyncStream): Future[byte] {.async.} =
+  ## Reads byte from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeByte*(s: AsyncStream, data: byte) {.async.} =
+  ## Writes byte to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readInt8*(s: AsyncStream): Future[int8] {.async.} =
+  ## Reads int8 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeInt8*(s: AsyncStream, data: int8) {.async.} =
+  ## Writes int8 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readInt16*(s: AsyncStream): Future[int16] {.async.} =
+  ## Reads int16 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeInt16*(s: AsyncStream, data: int16) {.async.} =
+  ## Writes int16 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readInt32*(s: AsyncStream): Future[int32] {.async.} =
+  ## Reads int32 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeInt32*(s: AsyncStream, data: int32) {.async.} =
+  ## Writes int32 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readInt64*(s: AsyncStream): Future[int64] {.async.} =
+  ## Reads int64 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeInt64*(s: AsyncStream, data: int64) {.async.} =
+  ## Writes int64 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readUInt8*(s: AsyncStream): Future[uint8] {.async.} =
+  ## Reads uint8 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeUInt8*(s: AsyncStream, data: uint8) {.async.} =
+  ## Writes uint8 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readUInt16*(s: AsyncStream): Future[uint16] {.async.} =
+  ## Reads uint16 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeUInt16*(s: AsyncStream, data: uint16) {.async.} =
+  ## Writes uint16 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readUInt32*(s: AsyncStream): Future[uint32] {.async.} =
+  ## Reads uint32 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeUInt32*(s: AsyncStream, data: uint32) {.async.} =
+  ## Writes uint32 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readUInt64*(s: AsyncStream): Future[uint64] {.async.} =
+  ## Reads uint64 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeUInt64*(s: AsyncStream, data: uint64) {.async.} =
+  ## Writes uint64 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readInt*(s: AsyncStream): Future[int] {.async.} =
+  ## Reads int from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeInt*(s: AsyncStream, data: int) {.async.} =
+  ## Writes int to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readUInt*(s: AsyncStream): Future[uint] {.async.} =
+  ## Reads uint from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeUInt*(s: AsyncStream, data: uint) {.async.} =
+  ## Writes uint to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readFloat32*(s: AsyncStream): Future[float32] {.async.} =
+  ## Reads float32 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeFloat32*(s: AsyncStream, data: float32) {.async.} =
+  ## Writes float32 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readFloat64*(s: AsyncStream): Future[float64] {.async.} =
+  ## Reads float64 from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeFloat64*(s: AsyncStream, data: float64) {.async.} =
+  ## Writes float64 to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readFloat*(s: AsyncStream): Future[float] {.async.} =
+  ## Reads float from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeFloat*(s: AsyncStream, data: float) {.async.} =
+  ## Writes float to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
 proc readBool*(s: AsyncStream): Future[bool] {.async.} =
+  ## Reads bool from the stream ``s``
   checkEof((await s.readBuffer(addr result, sizeof result)) == sizeof result)
 
 proc writeBool*(s: AsyncStream, data: bool) {.async.} =
+  ## Writes bool to the stream ``s``
   var d = data
   await s.writeBuffer(addr d, sizeof d)
 
-#[###################################################################################################
+#[
 # ``Not implemented`` stuff
 ]#
 
 proc setPositionNotImplemented*(s: AsyncStream; pos: int64) =
-  doAssert(false, "setPosition operation is not implemented")
+  ## Stub for the `setPosition` operation. Useful when
+  ## implementing the stream without set position support.
+  ## Throws an exception.
+  raise newException(IOError, "setPosition operation is not implemented")
 
 proc getPositionNotImplemented*(s: AsyncStream): int64 =
-  doAssert(false, "getPosition operation is not implemented")
+  ## Stub for the `getPosition` operation. Useful when
+  ## implementing the stream without get position support.
+  ## Throws an exception.
+  raise newException(IOError, "getPosition operation is not implemented")
 
 proc flushNotImplemented*(s: AsyncStream) {.async.} =
-  doAssert(false, "flush operation is not implemented")
+  ## Stub for the `flush` operation. Useful when
+  ## implementing the stream without flush support.
+  ## Throws an exception.
+  rause newException(IOError, "flush operation is not implemented")
 
 proc flushNop*(s: AsyncStream) {.async.} =
+  ## Stub for the `flush` operation. Useful when
+  ## implementing the stream without flush support.
+  ## Does nothing.
   discard
 
-#[###################################################################################################
+#[
 # AsyncFileStream
 ]#
 
@@ -295,11 +335,14 @@ proc initAsyncFileStreamImpl(res: var AsyncFileStreamObj, f: AsyncFile) =
   res.flushImpl = flushNop
 
 proc newAsyncFileStream*(fileName: string, mode = fmRead): AsyncStream =
+  ## Creates the new AsyncFileStream from the file named ``fileName``
+  ## with given ``mode``.
   var res = new AsyncFileStream
   initAsyncFileStreamImpl(res[], openAsync(fileName, mode))
   result = res
 
 proc newAsyncFileStream*(f: AsyncFile): AsyncStream =
+  ## Creates the new AsyncFileStream from the AsyncFile ``f``.
   var res = new AsyncFileStream
   initAsyncFileStreamImpl(res[], f)
   result = res
@@ -349,9 +392,11 @@ proc strWrite(s: AsyncStream, buf: pointer, size: int) {.async.} =
   str.pos += size
 
 proc `$`*(s: AsyncStringStream): string =
+  ## Converts ``s`` to string
   s.data
 
 proc newAsyncStringStream*(data = ""): AsyncStringStream =
+  ## Creates AsyncStringStream filled with ``data``
   new result
   result.data = data
 
@@ -401,6 +446,7 @@ proc initAsyncSocketStreamImpl(res: var AsyncSocketStreamObj, s: AsyncSocket) =
   res.flushImpl = flushNop
 
 proc newAsyncSocketStream*(s: AsyncSocket): AsyncStream =
+  ## Creates new AsyncSocketStream from the AsyncSocket ``s``
   var res = new AsyncSocketStream
   initAsyncSocketStreamImpl(res[], s)
   result = res
