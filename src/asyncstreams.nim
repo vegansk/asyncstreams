@@ -279,7 +279,8 @@ proc flushNotImplemented*(s: AsyncStream) {.async.} =
   ## Stub for the `flush` operation. Useful when
   ## implementing the stream without flush support.
   ## Throws an exception.
-  rause newException(IOError, "flush operation is not implemented")
+  if true: # Workaround for ``Error: statement not allowed after 'return', 'break', 'raise' or 'continue'``
+    raise newException(IOError, "flush operation is not implemented")
 
 proc flushNop*(s: AsyncStream) {.async.} =
   ## Stub for the `flush` operation. Useful when
@@ -426,12 +427,12 @@ proc sockAtEnd(s: AsyncStream): bool =
   AsyncSocketStream(s).closed
 
 proc sockRead(s: AsyncStream, buf: pointer, size: int): Future[int] {.async.} =
-  result = await  AsyncSocketStream(s).s.recvBuffer(buf, size)
+  result = await  AsyncSocketStream(s).s.recvInto(buf, size)
   if result == 0:
     AsyncSocketStream(s).closed = true
 
 proc sockWrite(s: AsyncStream; buf: pointer, size: int) {.async.} =
-  await AsyncSocketStream(s).s.sendBuffer(buf, size)
+  await AsyncSocketStream(s).s.send(buf, size)
 
 proc initAsyncSocketStreamImpl(res: var AsyncSocketStreamObj, s: AsyncSocket) =
   res.s = s
